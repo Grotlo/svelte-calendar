@@ -17,7 +17,7 @@
   export let end = new Date(2020, 9, 29);
   export let selected = today;
   export let selectedEnd = rangePicker ? today : null;
-  export let dateChosenStart = false;
+  export let dateChosen = false;
   export let dateChosenEnd = false;
   export let trigger = null;
   export let selectableCallback = null;
@@ -45,7 +45,7 @@
 
   let popover;
   let firstDate = true;
-  let width = rangePicker ? null : 340;
+  let width = rangePicker ? null : 320;
 
   let highlighted = today;
   let shouldShakeDate = false;
@@ -242,19 +242,21 @@
 
     if (!config.isRangePicker) {
       selected = chosen;
+      dateChosen = true;
       assignValueToTrigger(formattedSelected);
       close();
-      return dispatch('dateSelected', { date: chosen });
+      return dispatch('dateSelected', { date: selected });
     }
 
     if (firstDate) {
-      if (dateChosenStart) {
+      if (dateChosen) {
         selectedEnd = chosen;
       }
-      if (chosen <= selectedEnd || !dateChosenStart) {
+      if (chosen <= selectedEnd || !dateChosen) {
         selected = chosen;
         selectedEnd = selected;
       }
+      dateChosen = true;
     } else {
       if (chosen >= selected) {
         selectedEnd = chosen;
@@ -266,11 +268,15 @@
       dateChosenEnd = true;
     }
   
-    dateChosenStart = true;
-    firstDate = !firstDate;
     assignValueToTrigger(formattedSelected);
     assignValueToTrigger(formattedSelectedEnd);
-    return dispatch('dateSelected', { date: chosen });
+  
+    if (!firstDate) {
+      dispatch('dateSelected', { from: selected, to: selectedEnd });
+    }
+
+    firstDate = !firstDate;
+    return true;
   }
 
   function registerOpen() {
